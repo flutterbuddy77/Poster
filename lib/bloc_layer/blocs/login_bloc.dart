@@ -35,7 +35,8 @@ class EmailBloc extends Bloc<LogInClickedEvent, LoginState> with Validators {
           event.password,
         );
 
-        SuccessLoginState();
+        print('completed');
+        yield SuccessLoginState();
       } on HttpException catch (error) {
         yield ErrorLoginState(error.errorMessage);
       } catch (error) {
