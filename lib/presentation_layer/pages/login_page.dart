@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:poster/bloc_layer/login_bloc.dart';
 import 'package:poster/presentation_layer/pages/success_page.dart';
+import 'package:toast/toast.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -17,12 +18,12 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
     _usernameController?.dispose();
     _passwordController?.dispose();
-    await BlocProvider.of<LoginBloc>(context).close();
+    await BlocProvider.of<EmailBloc>(context).close();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<LoginBloc, LoginState>(
+    return BlocConsumer<EmailBloc, LoginState>(
         listenWhen: (prev, current) =>
             current is SuccessLoginState || current is ErrorLoginState,
         listener: (context, state) {
@@ -34,7 +35,14 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
 
-          if (state is ErrorLoginState) {}
+          if (state is ErrorLoginState) {
+            Toast.show(
+              state.errorMessage,
+              context,
+              duration: Toast.LENGTH_SHORT,
+              gravity: Toast.BOTTOM,
+            );
+          }
         },
         builder: (context, state) {
           return Scaffold(
@@ -45,11 +53,11 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     StreamBuilder<String>(
-                        stream: BlocProvider.of<LoginBloc>(context).username,
+                        stream: BlocProvider.of<EmailBloc>(context).username,
                         builder: (context, snapshot) {
                           return TextFormField(
                             controller: _usernameController,
-                            onChanged: BlocProvider.of<LoginBloc>(context)
+                            onChanged: BlocProvider.of<EmailBloc>(context)
                                 .usernameChanged,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(),
@@ -62,11 +70,11 @@ class _LoginPageState extends State<LoginPage> {
                       height: 15,
                     ),
                     StreamBuilder<String>(
-                      stream: BlocProvider.of<LoginBloc>(context).password,
+                      stream: BlocProvider.of<EmailBloc>(context).password,
                       builder: (context, snapshot) {
                         return TextFormField(
                           controller: _passwordController,
-                          onChanged: BlocProvider.of<LoginBloc>(context)
+                          onChanged: BlocProvider.of<EmailBloc>(context)
                               .passwordChanged,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
@@ -81,10 +89,10 @@ class _LoginPageState extends State<LoginPage> {
                       height: 30,
                     ),
                     StreamBuilder<String>(
-                      stream: BlocProvider.of<LoginBloc>(context).username,
+                      stream: BlocProvider.of<EmailBloc>(context).username,
                       builder: (context, usernameSnapshot) {
                         return StreamBuilder<String>(
-                          stream: BlocProvider.of<LoginBloc>(context).password,
+                          stream: BlocProvider.of<EmailBloc>(context).password,
                           builder: (context, passwordSnapshot) {
                             if (state is LoadingLoginState) {
                               return CircularProgressIndicator();
@@ -94,9 +102,9 @@ class _LoginPageState extends State<LoginPage> {
                               onPressed: usernameSnapshot.hasData
                                   ? (passwordSnapshot.hasData
                                       ? () {
-                                          BlocProvider.of<LoginBloc>(context)
+                                          BlocProvider.of<EmailBloc>(context)
                                               .add(
-                                            LogInClicedEvent(
+                                            LogInClickedEvent(
                                               _usernameController.text.trim(),
                                               _passwordController.text.trim(),
                                             ),

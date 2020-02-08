@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 
-class LogInClicedEvent extends Equatable {
+class LogInClickedEvent extends Equatable {
   final String username;
   final String password;
 
-  LogInClicedEvent(
+  LogInClickedEvent(
     this.username,
     this.password,
   );

@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:poster/bloc_layer/events/login_event.dart';
 import 'package:poster/bloc_layer/states/login_state.dart';
+import 'package:poster/data_layer/repositories/mail_repository.dart';
+import 'package:poster/utils/http_exception.dart';
 
-class LoginBloc extends Bloc<LogInClicedEvent, LoginState> with Validators {
+class EmailBloc extends Bloc<LogInClickedEvent, LoginState> with Validators {
   final _emailController = StreamController<String>.broadcast();
   final _passwordController = StreamController<String>.broadcast();
 
@@ -15,20 +17,29 @@ class LoginBloc extends Bloc<LogInClicedEvent, LoginState> with Validators {
   Function(String) get usernameChanged => _emailController.sink.add;
   Function(String) get passwordChanged => _passwordController.sink.add;
 
+  final MailRepository _mailRepository;
+
+  EmailBloc(this._mailRepository) : assert(_mailRepository != null);
+
   @override
   LoginState get initialState => InitializedLoginState();
 
   @override
-  Stream<LoginState> mapEventToState(LogInClicedEvent event) async* {
-    if (event is LogInClicedEvent) {
-      yield LoadingLoginState();
-      await Future.delayed(
-        Duration(seconds: 2),
-      );
-      if (event.username == 'Kanan' && event.password == 'Kanan12345') {
-        yield SuccessLoginState();
-      } else {
-        yield ErrorLoginState('Check username and password');
+  Stream<LoginState> mapEventToState(LogInClickedEvent event) async* {
+    if (event is LogInClickedEvent) {
+      try {
+        yield LoadingLoginState();
+
+        await _mailRepository.registerWithEmail(
+          event.username,
+          event.password,
+        );
+
+        SuccessLoginState();
+      } on HttpException catch (error) {
+        yield ErrorLoginState(error.errorMessage);
+      } catch (error) {
+        yield ErrorLoginState(error);
       }
     }
   }
@@ -44,7 +55,6 @@ class LoginBloc extends Bloc<LogInClicedEvent, LoginState> with Validators {
 mixin Validators {
   var emailValidator = StreamTransformer<String, String>.fromHandlers(
       handleData: (username, sink) {
-    print('email validator');
     if (username.length >= 5) {
       sink.add(username);
     } else {
