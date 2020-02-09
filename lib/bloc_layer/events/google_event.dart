@@ -8,3 +8,8 @@ class SignInWithGoogleClicked extends GoogleEvent {
   @override
   List<Object> get props => null;
 }
+
+class SignOutClicked extends GoogleEvent {
+  @override
+  List<Object> get props => null;
+}

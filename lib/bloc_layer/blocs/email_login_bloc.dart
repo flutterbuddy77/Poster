@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:poster/bloc_layer/events/login_event.dart';
 import 'package:poster/bloc_layer/states/login_state.dart';
 import 'package:poster/data_layer/repositories/mail_repository.dart';
+import 'package:poster/data_layer/repositories/sign_out.dart';
 import 'package:poster/utils/http_exception.dart';
 
-class EmailBloc extends Bloc<LogInClickedEvent, LoginState> with Validators {
+class EmailBloc extends Bloc<LoginEvent, LoginState> with Validators {
   final _emailController = StreamController<String>.broadcast();
   final _passwordController = StreamController<String>.broadcast();
 
@@ -25,7 +26,7 @@ class EmailBloc extends Bloc<LogInClickedEvent, LoginState> with Validators {
   LoginState get initialState => InitializedLoginState();
 
   @override
-  Stream<LoginState> mapEventToState(LogInClickedEvent event) async* {
+  Stream<LoginState> mapEventToState(LoginEvent event) async* {
     if (event is LogInClickedEvent) {
       try {
         yield LoadingLoginState();
@@ -42,6 +43,10 @@ class EmailBloc extends Bloc<LogInClickedEvent, LoginState> with Validators {
       } catch (error) {
         yield ErrorLoginState(error);
       }
+    } else if (event is SignOutClicked) {
+      yield LoadingLoginState();
+      await _mailRepository.signOut();
+      yield SuccessLoginState();
     }
   }
 

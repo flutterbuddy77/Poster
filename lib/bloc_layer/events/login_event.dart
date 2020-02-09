@@ -1,6 +1,10 @@
 import 'package:equatable/equatable.dart';
 
-class LogInClickedEvent extends Equatable {
+abstract class LoginEvent extends Equatable {
+  const LoginEvent();
+}
+
+class LogInClickedEvent extends LoginEvent {
   final String username;
   final String password;
 
@@ -14,4 +18,9 @@ class LogInClickedEvent extends Equatable {
         username,
         password,
       ];
+}
+
+class SignOutClicked extends LoginEvent {
+  @override
+  List<Object> get props => null;
 }

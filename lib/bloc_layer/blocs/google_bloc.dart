@@ -26,6 +26,10 @@ class GoogleBloc extends Bloc<GoogleEvent, GoogleState> {
       } catch (error) {
         yield ErrorHappened(error);
       }
+    } else if (event is SignOutClicked) {
+      yield LoadingSignIn();
+      await _googleSignInRepository.signOut();
+      yield SuccessSignIn();
     }
   }
 }
