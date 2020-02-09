@@ -1,15 +1,15 @@
 import 'package:equatable/equatable.dart';
 
-abstract class AuthState extends Equatable {
-  const AuthState();
+abstract class AuthenticationState extends Equatable {
+  const AuthenticationState();
 }
 
-class AuthenticationUninitialized extends AuthState {
+class AuthenticationUninitialized extends AuthenticationState {
   @override
   List<Object> get props => null;
 }
 
-class ErrorHappened extends AuthState {
+class ErrorHappened extends AuthenticationState {
   final String errorMesage;
 
   ErrorHappened(this.errorMesage) : assert(errorMesage != null);
@@ -20,12 +20,12 @@ class ErrorHappened extends AuthState {
       ];
 }
 
-class SuccessAuthentication extends AuthState {
+class SuccessAuthentication extends AuthenticationState {
   @override
   List<Object> get props => null;
 }
 
-class LoadingAuthentication extends AuthState {
+class LoadingAuthentication extends AuthenticationState {
   @override
   List<Object> get props => null;
 }

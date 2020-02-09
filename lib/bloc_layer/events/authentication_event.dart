@@ -6,11 +6,11 @@ enum AuthType {
   Number,
 }
 
-abstract class AuthEvent extends Equatable {
-  const AuthEvent();
+abstract class AuthenticationEvent extends Equatable {
+  const AuthenticationEvent();
 }
 
-class SignIn extends AuthEvent {
+class SignIn extends AuthenticationEvent {
   final AuthType authType;
 
   SignIn(this.authType) : assert(authType != null);
@@ -21,7 +21,7 @@ class SignIn extends AuthEvent {
       ];
 }
 
-class SignOut extends AuthEvent {
+class SignOut extends AuthenticationEvent {
   final AuthType authType;
 
   SignOut(this.authType) : assert(authType != null);

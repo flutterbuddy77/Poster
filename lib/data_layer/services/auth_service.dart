@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:poster/data_layer/repositories/google_sign_in_repository.dart';
 
-class FirebaseService {
+class AuthenticationService {
   /// Method for register with email and password in firebase
   Future<FirebaseUser> registerWithEmail(String email, String password) async {
     FirebaseUser user;

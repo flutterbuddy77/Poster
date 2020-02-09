@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:poster/data_layer/repositories/sign_out.dart';
-import 'package:poster/data_layer/services/firebase_service.dart';
+import 'package:poster/data_layer/services/auth_service.dart';
 import 'package:poster/utils/http_exception.dart';
 
 class MailRepository implements SignOut {
-  final FirebaseService _firebaseService;
+  final AuthenticationService _firebaseService;
 
   MailRepository(this._firebaseService) : assert(_firebaseService != null);
 
