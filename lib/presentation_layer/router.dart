@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:poster/constants/routes.dart';
 import 'package:poster/presentation_layer/pages/login_page.dart';
+import 'package:poster/presentation_layer/pages/success_page.dart';
 import 'package:poster/presentation_layer/pages/welcome_page.dart';
 
 Route<dynamic> onGenerateRoute(RouteSettings routeSettings) {
@@ -19,6 +20,11 @@ Route<dynamic> onGenerateRoute(RouteSettings routeSettings) {
     case Routes.HOME:
       return MaterialPageRoute(
         builder: (_) => null,
+      );
+      break;
+    case Routes.SUCCESS:
+      return MaterialPageRoute(
+        builder: (_) => SuccessPage(),
       );
       break;
     default:
