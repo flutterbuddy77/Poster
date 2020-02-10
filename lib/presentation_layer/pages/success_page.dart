@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:poster/bloc_layer/blocs/google_bloc.dart';
-import 'package:poster/bloc_layer/events/google_event.dart';
+import 'package:poster/bloc_layer/auth_types.dart';
+import 'package:poster/bloc_layer/authentication_logic.dart';
 
 class SuccessPage extends StatelessWidget {
   @override
@@ -25,8 +25,10 @@ class SuccessPage extends StatelessWidget {
             RaisedButton(
               child: Text('Sign Out'),
               onPressed: () {
-                BlocProvider.of<GoogleBloc>(context).add(
-                  SignOutClicked(),
+                BlocProvider.of<AuthenticationBloc>(context).add(
+                  SignOut(
+                    AuthType.Email,
+                  ),
                 );
               },
             ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:poster/bloc_layer/events/google_event.dart';
-import 'package:poster/bloc_layer/google_bloc.dart';
+import 'package:poster/bloc_layer/auth_types.dart';
+import 'package:poster/bloc_layer/authentication_logic.dart';
 import 'package:poster/constants/routes.dart';
 import 'package:toast/toast.dart';
 
@@ -13,11 +13,11 @@ class WelcomePage extends StatefulWidget {
 class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<GoogleBloc, GoogleState>(
+    return BlocConsumer<AuthenticationBloc, AuthenticationState>(
       listenWhen: (prev, current) =>
-          current is SuccessSignIn || current is ErrorHappened,
+          current is SuccessAuthentication || current is ErrorHappened,
       listener: (context, state) {
-        if (state is SuccessSignIn) {
+        if (state is SuccessAuthentication) {
           Navigator.of(context).pushNamed(
             Routes.SUCCESS,
           );
@@ -60,8 +60,10 @@ class _WelcomePageState extends State<WelcomePage> {
                   ),
                   RaisedButton(
                     onPressed: () {
-                      BlocProvider.of<GoogleBloc>(context).add(
-                        SignInWithGoogleClicked(),
+                      BlocProvider.of<AuthenticationBloc>(context).add(
+                        SignIn(
+                          AuthType.Google,
+                        ),
                       );
                     },
                     child: Text('Login/Signup with gmail'),

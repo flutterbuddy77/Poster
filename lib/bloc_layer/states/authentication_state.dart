@@ -10,13 +10,13 @@ class AuthenticationUninitialized extends AuthenticationState {
 }
 
 class ErrorHappened extends AuthenticationState {
-  final String errorMesage;
+  final String errorMessage;
 
-  ErrorHappened(this.errorMesage) : assert(errorMesage != null);
+  ErrorHappened(this.errorMessage) : assert(errorMessage != null);
 
   @override
   List<Object> get props => [
-        errorMesage,
+        errorMessage,
       ];
 }
 

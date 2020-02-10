@@ -2,12 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthenticationService {
+  final FirebaseAuth _user = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = new GoogleSignIn();
+
   /// Method for register with email and password in firebase
   Future<FirebaseUser> registerWithEmail(String email, String password) async {
     FirebaseUser user;
 
-    AuthResult result =
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    AuthResult result = await _user.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
@@ -19,7 +21,7 @@ class AuthenticationService {
   /// use it for google sign in
   Future<FirebaseUser> signInWithGoogle() async {
     // code of google sign in/ register
-    GoogleSignInAccount googleSignInAccount = await GoogleSignIn().signIn();
+    GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
     GoogleSignInAuthentication googleSignInAuthentication =
         await googleSignInAccount.authentication;
 
@@ -29,7 +31,7 @@ class AuthenticationService {
     );
 
     final FirebaseUser user =
-        (await FirebaseAuth.instance.signInWithCredential(credential)).user;
+        (await _user.signInWithCredential(credential)).user;
     return user;
   }
 
@@ -37,8 +39,12 @@ class AuthenticationService {
     // TODO: implement code of phone sign in / register
   }
 
-  Future signOut() async {
-    await FirebaseAuth.instance.signOut();
-    await GoogleSignIn().signOut();
+  Future emailSignOut() async {
+    await _user.signOut();
+  }
+
+  Future googleSignOut() async {
+    await _user.signOut();
+    await _googleSignIn.signOut();
   }
 }

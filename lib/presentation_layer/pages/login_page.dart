@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:poster/bloc_layer/login_bloc.dart';
 import 'package:poster/presentation_layer/pages/success_page.dart';
 import 'package:toast/toast.dart';
+import 'package:poster/bloc_layer/authentication_logic.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -18,16 +18,16 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
     _usernameController?.dispose();
     _passwordController?.dispose();
-    await BlocProvider.of<EmailBloc>(context).close();
+    await BlocProvider.of<AuthenticationBloc>(context).close();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<EmailBloc, LoginState>(
+    return BlocConsumer<AuthenticationBloc, AuthenticationState>(
         listenWhen: (prev, current) =>
-            current is SuccessLoginState || current is ErrorLoginState,
+            current is SuccessAuthentication || current is ErrorHappened,
         listener: (context, state) {
-          if (state is SuccessLoginState) {
+          if (state is SuccessAuthentication) {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => SuccessPage(),
@@ -35,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
 
-          if (state is ErrorLoginState) {
+          if (state is ErrorHappened) {
             Toast.show(
               state.errorMessage,
               context,
@@ -53,12 +53,14 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     StreamBuilder<String>(
-                        stream: BlocProvider.of<EmailBloc>(context).username,
+                        stream: BlocProvider.of<AuthenticationBloc>(context)
+                            .username,
                         builder: (context, snapshot) {
                           return TextFormField(
                             controller: _usernameController,
-                            onChanged: BlocProvider.of<EmailBloc>(context)
-                                .usernameChanged,
+                            onChanged:
+                                BlocProvider.of<AuthenticationBloc>(context)
+                                    .usernameChanged,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: 'username',
@@ -70,12 +72,14 @@ class _LoginPageState extends State<LoginPage> {
                       height: 15,
                     ),
                     StreamBuilder<String>(
-                      stream: BlocProvider.of<EmailBloc>(context).password,
+                      stream:
+                          BlocProvider.of<AuthenticationBloc>(context).password,
                       builder: (context, snapshot) {
                         return TextFormField(
                           controller: _passwordController,
-                          onChanged: BlocProvider.of<EmailBloc>(context)
-                              .passwordChanged,
+                          onChanged:
+                              BlocProvider.of<AuthenticationBloc>(context)
+                                  .passwordChanged,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: 'password',
@@ -89,12 +93,14 @@ class _LoginPageState extends State<LoginPage> {
                       height: 30,
                     ),
                     StreamBuilder<String>(
-                      stream: BlocProvider.of<EmailBloc>(context).username,
+                      stream:
+                          BlocProvider.of<AuthenticationBloc>(context).username,
                       builder: (context, usernameSnapshot) {
                         return StreamBuilder<String>(
-                          stream: BlocProvider.of<EmailBloc>(context).password,
+                          stream: BlocProvider.of<AuthenticationBloc>(context)
+                              .password,
                           builder: (context, passwordSnapshot) {
-                            if (state is LoadingLoginState) {
+                            if (state is LoadingAuthentication) {
                               return CircularProgressIndicator();
                             }
                             return RaisedButton(
@@ -102,9 +108,10 @@ class _LoginPageState extends State<LoginPage> {
                               onPressed: usernameSnapshot.hasData
                                   ? (passwordSnapshot.hasData
                                       ? () {
-                                          BlocProvider.of<EmailBloc>(context)
+                                          BlocProvider.of<AuthenticationBloc>(
+                                                  context)
                                               .add(
-                                            LogInClickedEvent(
+                                            RegisterUer(
                                               _usernameController.text.trim(),
                                               _passwordController.text.trim(),
                                             ),

@@ -1,39 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:poster/bloc_layer/google_bloc.dart';
-import 'package:poster/data_layer/repositories/google_sign_in_repository.dart';
-import 'package:poster/data_layer/repositories/mail_repository.dart';
+import 'package:poster/data_layer/repositories/authentication_repository.dart';
 import 'package:poster/data_layer/services/auth_service.dart';
 import 'package:poster/presentation_layer/pages/welcome_page.dart';
 import 'package:poster/presentation_layer/router.dart';
-import 'bloc_layer/blocs/email_login_bloc.dart';
+
+import 'bloc_layer/blocs/authentication_bloc.dart';
 
 void main() {
   // initialize firebase service
   final firebaseService = AuthenticationService();
 
-  // initialize mail repository
-  final mailRepository = new MailRepository(firebaseService);
-  // initialize google sign in repository
-  final googleSignInRepository = new GoogleSignInRepository(firebaseService);
+  // initialize authentication repository
+  final authenticationRepository =
+      new AuthenticationRepository(firebaseService);
 
   runApp(
     MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(
-          value: mailRepository,
-        ),
-        RepositoryProvider.value(
-          value: googleSignInRepository,
+          value: authenticationRepository,
         ),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (_) => EmailBloc(mailRepository),
-          ),
-          BlocProvider(
-            create: (_) => GoogleBloc(googleSignInRepository),
+            create: (_) => AuthenticationBloc(authenticationRepository),
           ),
         ],
         child: MyApp(),

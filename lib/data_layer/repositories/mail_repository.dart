@@ -24,7 +24,5 @@ class MailRepository implements SignOut {
   }
 
   @override
-  Future signOut() async {
-    await _firebaseService.signOut();
-  }
+  Future signOut() async {}
 }

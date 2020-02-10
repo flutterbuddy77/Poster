@@ -1,13 +1,24 @@
 import 'package:equatable/equatable.dart';
-
-enum AuthType {
-  Email,
-  Google,
-  Number,
-}
+import '../auth_types.dart';
 
 abstract class AuthenticationEvent extends Equatable {
   const AuthenticationEvent();
+}
+
+class RegisterUer extends AuthenticationEvent {
+  final String email;
+  final String password;
+
+  RegisterUer(
+    this.email,
+    this.password,
+  );
+
+  @override
+  List<Object> get props => [
+        email,
+        password,
+      ];
 }
 
 class SignIn extends AuthenticationEvent {

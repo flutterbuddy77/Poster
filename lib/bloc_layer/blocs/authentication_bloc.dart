@@ -1,14 +1,18 @@
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:poster/bloc_layer/events/login_event.dart';
-import 'package:poster/bloc_layer/states/login_state.dart';
-import 'package:poster/data_layer/repositories/mail_repository.dart';
-import 'package:poster/data_layer/repositories/sign_out.dart';
-import 'package:poster/utils/http_exception.dart';
 
-class EmailBloc extends Bloc<LoginEvent, LoginState> with Validators {
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:poster/bloc_layer/events/authentication_event.dart';
+import 'package:poster/bloc_layer/states/authentication_state.dart';
+import 'package:poster/data_layer/repositories/authentication_repository.dart';
+
+class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState>
+    with Validators {
+  final AuthenticationRepository _authenticationRepository;
+  final StreamController<bool> _authController = StreamController.broadcast();
   final _emailController = StreamController<String>.broadcast();
   final _passwordController = StreamController<String>.broadcast();
+
+  Stream<bool> get isUserLogged => _authController.stream;
 
   Stream<String> get username =>
       _emailController.stream.transform(emailValidator);
@@ -18,40 +22,19 @@ class EmailBloc extends Bloc<LoginEvent, LoginState> with Validators {
   Function(String) get usernameChanged => _emailController.sink.add;
   Function(String) get passwordChanged => _passwordController.sink.add;
 
-  final MailRepository _mailRepository;
-
-  EmailBloc(this._mailRepository) : assert(_mailRepository != null);
-
-  @override
-  LoginState get initialState => InitializedLoginState();
+  AuthenticationBloc(this._authenticationRepository)
+      : assert(_authenticationRepository != null);
 
   @override
-  Stream<LoginState> mapEventToState(LoginEvent event) async* {
-    if (event is LogInClickedEvent) {
-      try {
-        yield LoadingLoginState();
+  AuthenticationState get initialState => AuthenticationUninitialized();
 
-        await _mailRepository.registerWithEmail(
-          event.username,
-          event.password,
-        );
-
-        print('completed');
-        yield SuccessLoginState();
-      } on HttpException catch (error) {
-        yield ErrorLoginState(error.errorMessage);
-      } catch (error) {
-        yield ErrorLoginState(error);
-      }
-    } else if (event is SignOutClicked) {
-      yield LoadingLoginState();
-      await _mailRepository.signOut();
-      yield SuccessLoginState();
-    }
-  }
+  @override
+  Stream<AuthenticationState> mapEventToState(
+      AuthenticationEvent event) async* {}
 
   @override
   Future<void> close() async {
+    await _authController?.close();
     await _emailController?.close();
     await _passwordController?.close();
     return super.close();
@@ -61,6 +44,7 @@ class EmailBloc extends Bloc<LoginEvent, LoginState> with Validators {
 mixin Validators {
   var emailValidator = StreamTransformer<String, String>.fromHandlers(
       handleData: (username, sink) {
+    print('email validator');
     if (username.length >= 5) {
       sink.add(username);
     } else {
