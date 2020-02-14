@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:poster/bloc_layer/authentication_bloc/authentication_bloc.dart';
 import 'package:poster/bloc_layer/login_bloc/login_bloc.dart';
 import 'package:poster/constants/routes.dart';
+import 'package:poster/presentation_layer/widgets/theme_changer.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -23,6 +24,12 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('login'),
+        actions: <Widget>[
+          ThemeChanger(),
+        ],
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

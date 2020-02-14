@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:poster/data_layer/models/Post.dart';
-import 'package:poster/data_layer/repositories/shared_pref_repository.dart';
 
 class FirebasePostRepository implements PostRepository {
   final postCollection = Firestore.instance.collection('posts');
@@ -11,9 +10,8 @@ class FirebasePostRepository implements PostRepository {
   Future<void> addNewPost(Post post) async {
     try {
       var currentPost = post;
-      final uid = (await LocalStorageRepository.getInstance()).readUid();
       print(post.id);
-      final docRef = postCollection.document(post.id);
+      final docRef = postCollection.document();
       await docRef.setData(post.toDocument());
       currentPost.id = docRef.documentID;
       userPosts.add(currentPost);
