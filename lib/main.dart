@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:poster/bloc_layer/authentication_bloc/authentication_bloc.dart';
 import 'package:poster/bloc_layer/login_bloc/login_bloc.dart';
 import 'package:poster/data_layer/repositories/user_repository.dart';
+import 'package:poster/presentation_layer/pages/home_page.dart';
 import 'package:poster/presentation_layer/pages/login_page.dart';
 import 'package:poster/presentation_layer/pages/splash_page.dart';
-import 'package:poster/presentation_layer/pages/success_page.dart';
 import 'package:poster/presentation_layer/router.dart';
 import 'package:poster/utils/simple_bloc_delegate.dart';
 
@@ -17,7 +17,10 @@ void main() {
     RepositoryProvider.value(
       value: userRepository,
       child: BlocProvider(
-        create: (context) => AuthenticationBloc(userRepository: userRepository),
+        create: (context) => AuthenticationBloc(userRepository: userRepository)
+          ..add(
+            AppStarted(),
+          ),
         child: MyApp(),
       ),
     ),
@@ -27,8 +30,6 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AuthenticationBloc>(context).add(AppStarted());
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Poster App',
@@ -48,15 +49,15 @@ class MyApp extends StatelessWidget {
 
           if (state is Unauthenticated) {
             return BlocProvider<LoginBloc>(
-                create: (_) => LoginBloc(
-                      userRepository:
-                          RepositoryProvider.of<UserRepository>(context),
-                    ),
-                child: LoginPage());
+              create: (_) => LoginBloc(
+                userRepository: RepositoryProvider.of<UserRepository>(context),
+              ),
+              child: LoginPage(),
+            );
           }
 
           if (state is Authenticated) {
-            return SuccessPage();
+            return HomePage();
           }
 
           return Container();

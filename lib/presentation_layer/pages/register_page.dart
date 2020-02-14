@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:poster/bloc_layer/authentication_bloc/authentication_bloc.dart';
-import 'package:poster/bloc_layer/login_bloc/login_bloc.dart';
-import 'package:poster/constants/routes.dart';
+import 'package:poster/bloc_layer/register_bloc/register_bloc.dart';
 
-class LoginPage extends StatefulWidget {
+class RegisterPage extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -26,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: BlocConsumer<LoginBloc, LoginState>(
+          child: BlocConsumer<RegisterBloc, RegisterState>(
             listener: (context, state) {
               if (state.isFailure) {
                 Scaffold.of(context)
@@ -35,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
                     SnackBar(
                       content: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [Text('Login Failure'), Icon(Icons.error)],
+                        children: [Text('Register Failure'), Icon(Icons.error)],
                       ),
                       backgroundColor: Colors.red,
                     ),
@@ -50,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
                       content: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Logging In...'),
+                          Text('Regsiter Loading...'),
                           CircularProgressIndicator(),
                         ],
                       ),
@@ -60,6 +59,7 @@ class _LoginPageState extends State<LoginPage> {
 
               if (state.isSuccess) {
                 BlocProvider.of<AuthenticationBloc>(context).add(LoggedIn());
+                Navigator.of(context).pop();
               }
             },
             builder: (context, state) {
@@ -109,24 +109,11 @@ class _LoginPageState extends State<LoginPage> {
                       autocorrect: false,
                     ),
                     SizedBox(
-                      height: 10,
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: FlatButton(
-                        child: Text('Create Account'),
-                        onPressed: () {
-                          Navigator.of(context)
-                              .pushNamed(Routes.CREATE_ACCOUNT);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
+                      height: 30,
                     ),
                     RaisedButton(
                       color: Colors.blue,
-                      onPressed: _isLoginButtonEnabled(state)
+                      onPressed: _isCreateAccountButtonEnabled(state)
                           ? () {
                               _onFormSubmitted();
                             }
@@ -136,28 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                         decoration: BoxDecoration(),
                         child: Center(
                           child: Text(
-                            'Log in',
-                            style: TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    RaisedButton(
-                      color: Colors.blue,
-                      onPressed: _isSignInWithGoogleEnabled(state)
-                          ? _onGoogleSignInCliked
-                          : null,
-                      child: Container(
-                        height: 60,
-                        decoration: BoxDecoration(),
-                        child: Center(
-                          child: Text(
-                            'Sign in with Google',
+                            'Create Account',
                             style: TextStyle(
                               color: Colors.white,
                             ),
@@ -175,19 +141,14 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  bool _isLoginButtonEnabled(LoginState state) =>
+  bool _isCreateAccountButtonEnabled(RegisterState state) =>
       state.isFormValid &&
       !state.isSubmitting &&
       _emailController.text.isNotEmpty &&
       _passwordController.text.isNotEmpty;
 
-  bool _isSignInWithGoogleEnabled(LoginState state) =>
-      (!state.isEmailValid || !state.isPasswordValid) ||
-      _emailController.text.isEmpty ||
-      _passwordController.text.isEmpty;
-
   void _onEmailChanged() {
-    BlocProvider.of<LoginBloc>(context).add(
+    BlocProvider.of<RegisterBloc>(context).add(
       EmailChanged(
         email: _emailController.text,
       ),
@@ -195,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onPasswordChanged() {
-    BlocProvider.of<LoginBloc>(context).add(
+    BlocProvider.of<RegisterBloc>(context).add(
       PasswordChanged(
         password: _passwordController.text,
       ),
@@ -203,17 +164,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onFormSubmitted() {
-    BlocProvider.of<LoginBloc>(context).add(
-      LoginWithCredentialsPressed(
+    BlocProvider.of<RegisterBloc>(context).add(
+      Submitted(
         email: _emailController.text,
         password: _passwordController.text,
       ),
     );
   }
 
-  void _onGoogleSignInCliked() {
-    BlocProvider.of<LoginBloc>(context).add(
-      LoginWithGooglePressed(),
-    );
+  @override
+  void dispose() async {
+    super.dispose();
+    _passwordController?.dispose();
+    _passwordController?.dispose();
   }
 }

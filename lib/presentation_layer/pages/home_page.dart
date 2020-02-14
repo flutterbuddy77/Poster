@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:poster/bloc_layer/authentication_bloc/authentication_bloc.dart';
+import 'package:poster/data_layer/models/Post.dart';
+import 'package:poster/data_layer/repositories/post_repository.dart';
+import 'package:poster/data_layer/repositories/shared_pref_repository.dart';
 
-class SuccessPage extends StatelessWidget {
+class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,6 +24,18 @@ class SuccessPage extends StatelessWidget {
             ),
             SizedBox(
               height: 10,
+            ),
+            RaisedButton(
+              child: Text('Send Data'),
+              onPressed: () async {
+                final postRepo = new FirebasePostRepository();
+                await postRepo.addNewPost(Post(
+                  title: 'test title 2',
+                  body: 'test body',
+                  userId:
+                      (await LocalStorageRepository.getInstance()).readUid(),
+                ));
+              },
             ),
             RaisedButton(
               child: Text('Sign Out'),
