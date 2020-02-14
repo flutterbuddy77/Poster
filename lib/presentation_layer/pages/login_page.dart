@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:poster/presentation_layer/pages/success_page.dart';
-import 'package:toast/toast.dart';
-import 'package:poster/bloc_layer/authentication_logic.dart';
+import 'package:poster/bloc_layer/authentication_bloc/authentication_bloc.dart';
+import 'package:poster/bloc_layer/login_bloc/login_bloc.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -10,137 +9,209 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
-  void dispose() async {
-    super.dispose();
-    _usernameController?.dispose();
-    _passwordController?.dispose();
-    await BlocProvider.of<AuthenticationBloc>(context).close();
+  void initState() {
+    super.initState();
+    _emailController.addListener(_onEmailChanged);
+    _passwordController.addListener(_onPasswordChanged);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthenticationBloc, AuthenticationState>(
-        listenWhen: (prev, current) =>
-            current is SuccessAuthentication || current is ErrorHappened,
-        listener: (context, state) {
-          if (state is SuccessAuthentication) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => SuccessPage(),
-              ),
-            );
-          }
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: BlocConsumer<LoginBloc, LoginState>(
+            listener: (context, state) {
+              if (state.isFailure) {
+                Scaffold.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [Text('Login Failure'), Icon(Icons.error)],
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+              }
 
-          if (state is ErrorHappened) {
-            Toast.show(
-              state.errorMessage,
-              context,
-              duration: Toast.LENGTH_SHORT,
-              gravity: Toast.BOTTOM,
-            );
-          }
-        },
-        builder: (context, state) {
-          return Scaffold(
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+              if (state.isSubmitting) {
+                Scaffold.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Logging In...'),
+                          CircularProgressIndicator(),
+                        ],
+                      ),
+                    ),
+                  );
+              }
+
+              if (state.isSuccess) {
+                BlocProvider.of<AuthenticationBloc>(context).add(LoggedIn());
+              }
+            },
+            builder: (context, state) {
+              return SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    StreamBuilder<String>(
-                        stream: BlocProvider.of<AuthenticationBloc>(context)
-                            .username,
-                        builder: (context, snapshot) {
-                          return TextFormField(
-                            controller: _usernameController,
-                            onChanged:
-                                BlocProvider.of<AuthenticationBloc>(context)
-                                    .usernameChanged,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'username',
-                              errorText: snapshot.error,
-                            ),
-                          );
-                        }),
+                    Container(
+                      height: 100,
+                      width: 100,
+                      child: FlutterLogo(),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        icon: Icon(Icons.email),
+                        border: OutlineInputBorder(),
+                        labelText: 'email',
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      autovalidate: true,
+                      autocorrect: false,
+                      validator: (_) {
+                        return !state.isEmailValid ? 'Invalid Email' : null;
+                      },
+                    ),
                     SizedBox(
                       height: 15,
                     ),
-                    StreamBuilder<String>(
-                      stream:
-                          BlocProvider.of<AuthenticationBloc>(context).password,
-                      builder: (context, snapshot) {
-                        return TextFormField(
-                          controller: _passwordController,
-                          onChanged:
-                              BlocProvider.of<AuthenticationBloc>(context)
-                                  .passwordChanged,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'password',
-                            errorText: snapshot.error,
-                          ),
-                          obscureText: true,
-                        );
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        icon: Icon(Icons.lock),
+                        border: OutlineInputBorder(),
+                        labelText: 'password',
+                      ),
+                      validator: (_) {
+                        return !state.isPasswordValid
+                            ? 'Invalid Password'
+                            : null;
                       },
+                      obscureText: true,
+                      autovalidate: true,
+                      autocorrect: false,
                     ),
                     SizedBox(
-                      height: 30,
+                      height: 10,
                     ),
-                    StreamBuilder<String>(
-                      stream:
-                          BlocProvider.of<AuthenticationBloc>(context).username,
-                      builder: (context, usernameSnapshot) {
-                        return StreamBuilder<String>(
-                          stream: BlocProvider.of<AuthenticationBloc>(context)
-                              .password,
-                          builder: (context, passwordSnapshot) {
-                            if (state is LoadingAuthentication) {
-                              return CircularProgressIndicator();
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FlatButton(
+                        child: Text('Create Account'),
+                        onPressed: () {
+                          // TODO: navigate to register with email screen
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    RaisedButton(
+                      color: Colors.blue,
+                      onPressed: _isLoginButtonEnabled(state)
+                          ? () {
+                              _onFormSubmitted();
                             }
-                            return RaisedButton(
-                              color: Colors.blue,
-                              onPressed: usernameSnapshot.hasData
-                                  ? (passwordSnapshot.hasData
-                                      ? () {
-                                          BlocProvider.of<AuthenticationBloc>(
-                                                  context)
-                                              .add(
-                                            RegisterUer(
-                                              _usernameController.text.trim(),
-                                              _passwordController.text.trim(),
-                                            ),
-                                          );
-                                        }
-                                      : null)
-                                  : null,
-                              child: Container(
-                                height: 50,
-                                decoration: BoxDecoration(),
-                                child: Center(
-                                  child: Text(
-                                    'Log in',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                          : null,
+                      child: Container(
+                        height: 60,
+                        decoration: BoxDecoration(),
+                        child: Center(
+                          child: Text(
+                            'Log in',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    RaisedButton(
+                      color: Colors.blue,
+                      onPressed: _onGoogleSignInCliked,
+                      child: Container(
+                        height: 60,
+                        decoration: BoxDecoration(),
+                        child: Center(
+                          child: Text(
+                            'Sign in with Google',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
-          );
-        });
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _isLoginButtonEnabled(LoginState state) =>
+      state.isFormValid &&
+      !state.isSubmitting &&
+      _emailController.text.isNotEmpty &&
+      _passwordController.text.isNotEmpty;
+
+  void _onEmailChanged() {
+    BlocProvider.of<LoginBloc>(context).add(
+      EmailChanged(
+        email: _emailController.text,
+      ),
+    );
+  }
+
+  void _onPasswordChanged() {
+    BlocProvider.of<LoginBloc>(context).add(
+      PasswordChanged(
+        password: _passwordController.text,
+      ),
+    );
+  }
+
+  void _onFormSubmitted() {
+    BlocProvider.of<LoginBloc>(context).add(
+      LoginWithCredentialsPressed(
+        email: _emailController.text,
+        password: _passwordController.text,
+      ),
+    );
+  }
+
+  void _onGoogleSignInCliked() {
+    BlocProvider.of<LoginBloc>(context).add(
+      LoginWithGooglePressed(),
+    );
+  }
+
+  @override
+  void dispose() async {
+    _emailController?.dispose();
+    _passwordController?.dispose();
+    super.dispose();
   }
 }

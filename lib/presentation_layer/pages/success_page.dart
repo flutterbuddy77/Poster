@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:poster/bloc_layer/auth_types.dart';
-import 'package:poster/bloc_layer/authentication_logic.dart';
+import 'package:poster/bloc_layer/authentication_bloc/authentication_bloc.dart';
 
 class SuccessPage extends StatelessWidget {
   @override
@@ -26,9 +25,7 @@ class SuccessPage extends StatelessWidget {
               child: Text('Sign Out'),
               onPressed: () {
                 BlocProvider.of<AuthenticationBloc>(context).add(
-                  SignOut(
-                    AuthType.Email,
-                  ),
+                  LoggedOut(),
                 );
               },
             ),

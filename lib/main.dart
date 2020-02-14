@@ -1,33 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:poster/data_layer/repositories/authentication_repository.dart';
-import 'package:poster/data_layer/services/auth_service.dart';
-import 'package:poster/presentation_layer/pages/welcome_page.dart';
+import 'package:poster/bloc_layer/authentication_bloc/authentication_bloc.dart';
+import 'package:poster/bloc_layer/login_bloc/login_bloc.dart';
+import 'package:poster/data_layer/repositories/user_repository.dart';
+import 'package:poster/presentation_layer/pages/login_page.dart';
+import 'package:poster/presentation_layer/pages/splash_page.dart';
+import 'package:poster/presentation_layer/pages/success_page.dart';
 import 'package:poster/presentation_layer/router.dart';
-
-import 'bloc_layer/blocs/authentication_bloc.dart';
+import 'package:poster/utils/simple_bloc_delegate.dart';
 
 void main() {
-  // initialize firebase service
-  final firebaseService = AuthenticationService();
-
-  // initialize authentication repository
-  final authenticationRepository =
-      new AuthenticationRepository(firebaseService);
-
+  WidgetsFlutterBinding.ensureInitialized();
+  BlocSupervisor.delegate = SimpleBlocDelegate();
+  final UserRepository userRepository = new UserRepository();
   runApp(
-    MultiRepositoryProvider(
-      providers: [
-        RepositoryProvider.value(
-          value: authenticationRepository,
-        ),
-      ],
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (_) => AuthenticationBloc(authenticationRepository),
-          ),
-        ],
+    RepositoryProvider.value(
+      value: userRepository,
+      child: BlocProvider(
+        create: (context) => AuthenticationBloc(userRepository: userRepository),
         child: MyApp(),
       ),
     ),
@@ -37,6 +27,8 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    BlocProvider.of<AuthenticationBloc>(context).add(AppStarted());
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Poster App',
@@ -48,7 +40,28 @@ class MyApp extends StatelessWidget {
           textTheme: ButtonTextTheme.primary,
         ),
       ),
-      home: WelcomePage(),
+      home: BlocBuilder<AuthenticationBloc, AuthenticationState>(
+        builder: (context, state) {
+          if (state is Uninitialized) {
+            return SplashPage();
+          }
+
+          if (state is Unauthenticated) {
+            return BlocProvider<LoginBloc>(
+                create: (_) => LoginBloc(
+                      userRepository:
+                          RepositoryProvider.of<UserRepository>(context),
+                    ),
+                child: LoginPage());
+          }
+
+          if (state is Authenticated) {
+            return SuccessPage();
+          }
+
+          return Container();
+        },
+      ),
       onGenerateRoute: onGenerateRoute,
     );
   }
